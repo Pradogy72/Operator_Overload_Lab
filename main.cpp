@@ -2,9 +2,9 @@
 #include <set>
 using namespace std;
 /* Name: Miguel Angel Prado
- * Date: 02/09/2026
+ * Date: 02/20/2026
  * Purpose: Implement a BankAccount class to simulate basic banking operations for multiple accounts.
- * Assignment: Lab Activities: Objects and Classes I
+ * Assignment: Lab Activities: Advanced Objects and Classes II
  */
 
 class BankAccount {
@@ -17,6 +17,16 @@ class BankAccount {
         double GetBal() const;
         void deposit(double amount);
         void withdraw(double amount);
+        BankAccount (const BankAccount& other);
+        BankAccount& operator=(const BankAccount& other);
+        ~BankAccount();
+        BankAccount& operator+=(double amount);
+        BankAccount& operator-=(double amount);
+        bool operator==(const BankAccount& other) const;
+        bool operator<(const BankAccount& other) const;
+        bool operator>(const BankAccount& other) const;
+        static void printAccount(const BankAccount& account);
+        static BankAccount createAccountFromInput();
 
     private:
         string accountNumber;
@@ -51,6 +61,104 @@ void BankAccount::deposit(double amount) {
 void BankAccount::withdraw(double amount) {
     balance -= amount;
 }
+BankAccount::BankAccount (const BankAccount& other) {
+    accountNumber = other.accountNumber;
+    accountHolderName = other.accountHolderName;
+    balance = other.balance;
+}
+BankAccount& BankAccount::operator=(const BankAccount& other) {
+    if (this != &other) {
+        accountNumber = other.accountNumber;
+        accountHolderName = other.accountHolderName;
+        balance = other.balance;
+    }
+    return *this;
+}
+BankAccount::~BankAccount() {
+}
+BankAccount& BankAccount::operator+=(double amount) {
+    while (amount < 0) {
+        cout << "Invalid amount, must be > 0, try again." << endl;
+        cout << "Enter amount: " << endl;
+        cin >> amount;
+        cin.clear();
+        cin.ignore();
+    }
+    if (amount > 0) {
+        this->balance += amount;
+        cout << "$" << amount << " deposited successfully" << endl;
+    }
+    return *this;
+}
+BankAccount& BankAccount::operator-=(double amount) {
+    if (amount > 0) {
+        if (this->balance >= amount) {
+            this->balance -= amount;
+            cout << "$" << amount << " withdrawn successfully" << endl;
+        }
+        else {
+            cout << "Insufficient balance, must be > amount" << endl;
+        }
+    }
+    else {
+        cout << "Invalid amount, must be > 0" << endl;
+    }
+    return *this;
+}
+bool BankAccount::operator==(const BankAccount& other) const {
+    if (this->GetNumber() == other.GetNumber()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+bool BankAccount::operator<(const BankAccount& other) const {
+    if (this->GetBal() < other.GetBal()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+bool BankAccount::operator>(const BankAccount& other) const {
+    if (this->GetBal() > other.GetBal()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+void BankAccount::printAccount(const BankAccount& account) {
+    cout << "Account Info: " << endl;
+    cout << "Account Number: " << account.GetNumber() << endl;
+    cout << "Account Holder's Name: " << account.GetName() << endl;
+    cout << "Account Balance: $" << account.GetBal() << endl;
+}
+BankAccount BankAccount::createAccountFromInput() {
+    string number;
+    string name;
+    double bal;
+    cout << "Enter account number: " << endl;
+    cin >> number;
+    cin.clear();
+    cin.ignore();
+    cout << "Enter account holder name: " << endl;
+    getline(cin, name);
+    cin.clear();
+    cout << "Enter initial balance: " << endl;
+    cin >> bal;
+    cin.clear();
+    while (bal < 0) {
+        cout << "Invalid amount, must be >= 0, try again." << endl;
+        cout << "Enter initial balance: " << endl;
+        cin >> bal;
+        cin.clear();
+        cin.ignore();
+    }
+    BankAccount tempAccount(number, name, bal);
+    return tempAccount;
+}
 
 int main() {
     vector<BankAccount> accounts;
@@ -71,129 +179,81 @@ int main() {
         }
         switch (choice) {
             case 1: {
-                string number;
-                string name;
-                cout << "1. Create Account: " << endl << "Enter account number: " << endl;
-                cin >> number;
-                cout << "1. Create Account: " << endl << "Account number: " << number << endl << "Enter account holder name: " << endl;
-                cin.ignore();
-                getline(cin, name); // had some trouble getting menu to take name input, cin.ignore() fixed it as getline was taking in whitespace before it could ask for input
-                BankAccount tempAccount(number, name, 0);
+                BankAccount tempAccount = BankAccount::createAccountFromInput();
                 accounts.push_back(tempAccount);
-                cout << "Account created successfully" << endl;
                 break;
             }
             case 2: {
                 string number;
-                double bal;
-                int tempIndex;
-                int x = -1;
-                int y = 0;
-                string tempNum;
-                do {
-                    cout << "2. Deposit: " << endl << "Enter account number: " << endl;
+                int tempIndex = -1;
+                double amount;
+                while (tempIndex == -1) {
+                    cout << "Enter account number: " << endl;
                     cin >> number;
                     cin.clear();
                     cin.ignore();
-                    for (int i = 0; i < accounts.size(); i++) {
-                        if (accounts.at(i).GetNumber() == number) {
-                            tempNum = accounts.at(i).GetNumber();
-                            tempIndex = i;
-                            x = 1;
-                            break;
+                        for (int i = 0; i < accounts.size(); i++) {
+                            if (number == accounts.at(i).GetNumber()) {
+                                tempIndex = i;
+                                break;
+                            }
+                        }
+                        if (tempIndex == -1) {
+                            cout << "Invalid account number, try again" << endl;
                         }
                     }
-                    if (x == -1) {
-                        cout << "Account number not found, try again" << endl;
-                    }
-                } while (x != 1);
-                while (y == 0) {
-
-                    cout << "2. Deposit: " << endl << "Account number: " << tempNum << endl;
-                    cout << "Enter deposit amount: " << endl;
-                    cin >> bal;
-                    cin.clear();
-                    cin.ignore();
-                    if (!cin.fail() && bal > 0) {
-                        accounts.at(tempIndex).deposit(bal);
-                        cout << "Deposit successful" << endl;
-                        y = 1;
-                    }
-                    else {
-                        cout << "Invalid input, try again" << endl;
-                    }
-                }
+                cout << "Enter amount you wish to deposit: " << endl;
+                cin >> amount;
+                cin.clear();
+                cin.ignore();
+                accounts.at(tempIndex)+=amount;
                 break;
             }
             case 3: {
-                double bal;
                 string number;
-                int tempIndex;
-                int x = -1;
-                int y = 0;
-                string tempNum;
-                do {
-                    cout << "3. Withdraw: " << endl << "Enter account number: " << endl;
+                int tempIndex = -1;
+                double amount;
+                while (tempIndex == -1) {
+                    cout << "Enter account number: " << endl;
                     cin >> number;
                     cin.clear();
                     cin.ignore();
                     for (int i = 0; i < accounts.size(); i++) {
-                        if (accounts.at(i).GetNumber() == number) {
-                            x = 1;
-                            tempNum = accounts.at(i).GetNumber();
+                        if (number == accounts.at(i).GetNumber()) {
                             tempIndex = i;
                             break;
                         }
                     }
-                    if (x == -1) {
-                        cout << "Account number not found, try again" << endl;
-                    }
-                } while (x == -1);
-                while (y == 0) {
-                    cout << "3. Withdraw: " << endl << "Account number: " << tempNum << endl;
-                    cout << "Enter withdraw amount: " << endl;
-                    cin >> bal;
-                    cin.clear();
-                    cin.ignore();
-                    if (((!cin.fail()) && (bal > 0)) && (bal <= accounts.at(tempIndex).GetBal())) {
-                        accounts.at(tempIndex).withdraw(bal);
-                        cout << "Withdraw of $" << bal <<" successful" << endl;
-                        y = 1;
-                    }
-                    else if (bal <= 0) {
-                        cout << "Invalid input, try again" << endl;
-                    }
-                    else {
-                        cout << "Insufficient funds, try again" << endl;
+                    if (tempIndex == -1) {
+                        cout << "Invalid account number, try again" << endl;
                     }
                 }
+                cout << "Enter amount you wish to withdraw: " << endl;
+                cin >> amount;
+                cin.clear();
+                cin.ignore();
+                accounts.at(tempIndex)-=amount;
                 break;
             }
             case 4: {
                 string number;
-                int x = -1;
-                int tempIndex;
-                do {
-                    cout << "4. View Account Info: " << endl << "Enter account number: " << endl;
+                int tempIndex = -1;
+                while (tempIndex == -1) {
+                    cout << "Enter account number: " << endl;
                     cin >> number;
                     cin.clear();
                     cin.ignore();
                     for (int i = 0; i < accounts.size(); i++) {
-                        if (accounts.at(i).GetNumber() == number) {
-                            x = 1;
+                        if (number == accounts.at(i).GetNumber()) {
                             tempIndex = i;
                             break;
                         }
                     }
-                    if (x == -1) {
-                        cout << "Account number not found, try again" << endl;
+                    if (tempIndex == -1) {
+                        cout << "Invalid account number, try again" << endl;
                     }
-                } while (x != 1);
-                cout << "Account Info: " << endl;
-                cout << "Account Number: " << accounts.at(tempIndex).GetNumber() << endl;
-                cout << "Account Holder's Name: " << accounts.at(tempIndex).GetName() << endl;
-                cout << "Account Balance: $" << accounts.at(tempIndex).GetBal() << endl;
-
+                }
+                BankAccount::printAccount(accounts.at(tempIndex));
                 break;
             }
             case 5: {
