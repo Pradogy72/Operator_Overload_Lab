@@ -6,7 +6,7 @@ using namespace std;
  * Purpose: Implement a BankAccount class to simulate basic banking operations for multiple accounts.
  * Assignment: Lab Activities: Objects and Classes I
  */
-//
+
 class BankAccount {
     public:
         BankAccount();
