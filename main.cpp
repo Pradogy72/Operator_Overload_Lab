@@ -319,7 +319,7 @@ int main() {
                 break;
             }
             case 6: {
-                cout << "5. Quit:" << endl << "Goodbye!" << endl;
+                cout << "6. Quit:" << endl << "Goodbye!" << endl;
                 break;
             }
             default: {
